@@ -6,19 +6,28 @@
   },
   {
     "name": "update-server",
-    "type": "app",
+    "type": "command",
+    "dir": "/home/xie/code/java/hydraulic-platform/",
+    "cmd": "git pull"
+  },
+  {
+    "name": "update-server",
+    "type": "command",
+    "dir": "/home/xie/code/java/hydraulic-platform/",
     "cmd": "git pull"
   },
   {
     "name": "build-server",
-    "type": "app",
-    "cmd": "mvn clean package -Dmaven.test.skip=true -f /home/xie/code/java/hydraulic-platform/"
+    "type": "command",
+    "dir": "/home/xie/code/java/hydraulic-platform/",
+    "cmd": "mvn clean package -Dmaven.test.skip=true"
   },
   {
     "name": "start-server",
-    "type": "app",
+    "type": "command",
+    "dir": "/home/xie/code/java/hydraulic-platform/servers/peasants-hydraulic-server/target",
     "delay": 3000,
-    "cmd": "java -Dfile.encoding=utf-8 -Xms600m -Xmx600m -jar /home/xie/code/java/hydraulic-platform/servers/peasants-hydraulic-server/target/peasants-hydraulic-server-1.0.jar",
+    "cmd": "javaw -Dfile.encoding=utf-8 -Xms600m -Xmx600m -jar peasants-hydraulic-server-1.0.jar",
     "async": true
   }
 ]

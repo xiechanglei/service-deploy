@@ -9,89 +9,92 @@ import (
 	"strings"
 )
 
-func ExecuteCommand(command string) string {
-	log.Println("execute command:" + command)
+func ExecuteCommandAndGetResult(command string) string {
 	res := ""
-	var cmd *exec.Cmd
-	if runtime.GOOS == "windows" {
-		cmd = exec.Command("cmd", "/C", command)
-	} else {
-		cmd = exec.Command("/bin/sh", "-c", command)
-	}
-	stout, err := cmd.StdoutPipe()
-	if err == nil {
-		err = cmd.Start()
-		if err == nil {
-			reader := bufio.NewReader(stout)
-			for {
-				line, _, err := reader.ReadLine()
-				if err != nil || io.EOF == err {
-					break
-				}
-				res += string(line) + "\n"
-			}
-			cmd.Wait()
+	cmd := buildCommand(command)
+	stout, _ := cmd.StdoutPipe()
+	cmd.Start()
+	reader := bufio.NewReader(stout)
+	for {
+		line, _, err := reader.ReadLine()
+		if err != nil || io.EOF == err {
+			break
 		}
+		res += string(line) + "\n"
 	}
-	log.Println("get result :" + res)
-	return strings.TrimSpace(res)
+	cmd.Wait()
+	return res
 }
 
-func ExecuteCommandAndPrintOutPut(command string) {
-	log.Println("execute command:" + command)
-	var cmd *exec.Cmd
-	if runtime.GOOS == "windows" {
-		cmd = exec.Command("cmd", "/c", command)
-	} else {
-		cmd = exec.Command("/bin/sh", "-c", command)
+func ExecuteShellAndGetResult(command string) string {
+	res := ""
+	cmd := buildShell(command)
+	stout, _ := cmd.StdoutPipe()
+	cmd.Start()
+	reader := bufio.NewReader(stout)
+	for {
+		line, _, err := reader.ReadLine()
+		if err != nil || io.EOF == err {
+			break
+		}
+		res += string(line) + "\n"
 	}
-	stout, err := cmd.StdoutPipe()
-	if err == nil {
-		err = cmd.Start()
-		if err != nil {
-			return
-		}
-		reader := bufio.NewReader(stout)
-		for {
-			line, _, err := reader.ReadLine()
-			if err != nil || io.EOF == err {
-				break
-			}
-			log.Println(string(line))
-		}
-		err = cmd.Wait()
-		if err != nil {
-			return
-		}
-	}
+	cmd.Wait()
+	return res
+}
 
+func ExecuteCommandAndLog(command string) {
+	cmd := buildCommand(command)
+	stout, _ := cmd.StdoutPipe()
+	cmd.Start()
+	reader := bufio.NewReader(stout)
+	for {
+		line, _, err := reader.ReadLine()
+		if err != nil || io.EOF == err {
+			break
+		}
+		log.Println(line)
+	}
+	cmd.Wait()
+}
+
+func ExecuteShellAndLog(command string) {
+	cmd := buildShell(command)
+	stout, _ := cmd.StdoutPipe()
+	cmd.Start()
+	reader := bufio.NewReader(stout)
+	for {
+		line, _, err := reader.ReadLine()
+		if err != nil || io.EOF == err {
+			break
+		}
+		log.Println(line)
+	}
+	cmd.Wait()
+}
+
+func ExecuteCommand(command string) {
+	cmd := buildCommand(command)
+	cmd.Run()
 }
 
 func ExecuteShell(command string) {
-	log.Println("execute command:" + command)
+	cmd := buildShell(command)
+	cmd.Run()
+}
+
+func buildCommand(command string) *exec.Cmd {
 	command = strings.TrimSpace(command)
 	commandArr := strings.Split(command, " ")
 	command = commandArr[0]
 	args := commandArr[1:]
-	cmd := exec.Command(command, args...)
-	stout, err := cmd.StdoutPipe()
-	if err == nil {
-		err = cmd.Start()
-		if err != nil {
-			return
-		}
-		reader := bufio.NewReader(stout)
-		for {
-			line, _, err := reader.ReadLine()
-			if err != nil || io.EOF == err {
-				break
-			}
-			log.Println(string(line))
-		}
-		err = cmd.Wait()
-		if err != nil {
-			return
-		}
-	}
+	return exec.Command(command, args...)
+}
 
+func buildShell(command string) *exec.Cmd {
+	if runtime.GOOS == "linux" {
+		return exec.Command("/bin/sh", "-c", command)
+	} else {
+		return exec.Command("cmd", "/C", command)
+	}
 }
